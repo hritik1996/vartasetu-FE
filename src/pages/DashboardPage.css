@@ -1,0 +1,6 @@
+.chat-dashboard {
+  display: flex;
+  height: calc(100vh - 56px);
+  background: #f1f3f4;
+  overflow: hidden;
+}

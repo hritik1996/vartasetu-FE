@@ -1,0 +1,279 @@
+.archives-page {
+  display: flex;
+  height: calc(100vh - 56px);
+  background: #fff;
+  overflow: hidden;
+}
+
+/* Left Panel - Archives List */
+.archives-list-panel {
+  width: 340px;
+  min-width: 340px;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+}
+
+.archives-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.archives-list-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.filter-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filter-btn:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.archives-list-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* Skeleton Item */
+.archive-skeleton-item {
+  padding: 16px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.archive-skeleton-item:last-child {
+  border-bottom: none;
+}
+
+.skeleton-line {
+  height: 12px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-line.long {
+  width: 100%;
+}
+
+.skeleton-line.medium {
+  width: 70%;
+}
+
+.skeleton-line.short {
+  width: 45%;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Middle Panel - Chat Content */
+.archives-chat-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e5e7eb;
+}
+
+.archives-chat-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.archives-chat-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.archives-chat-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Empty State */
+.archives-empty-state {
+  text-align: center;
+  padding: 40px;
+  max-width: 400px;
+}
+
+.archives-empty-state .empty-icon {
+  margin-bottom: 24px;
+  color: #9ca3af;
+}
+
+.archives-empty-state .empty-icon svg {
+  stroke-width: 1.2;
+}
+
+.archives-empty-state h3 {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.archives-empty-state p {
+  margin: 0 0 24px;
+  font-size: 15px;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.install-btn {
+  display: inline-block;
+  padding: 14px 32px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 16px;
+}
+
+.install-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.or-text {
+  display: block;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.or-text a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.or-text a:hover {
+  text-decoration: underline;
+}
+
+/* Right Panel - Details */
+.archives-details-panel {
+  width: 280px;
+  min-width: 280px;
+  padding: 24px 20px;
+  overflow-y: auto;
+}
+
+.details-skeleton {
+  padding: 16px 0;
+}
+
+.skeleton-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.skeleton-row:last-child {
+  margin-bottom: 0;
+}
+
+.skeleton-dot {
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+  background: #e5e7eb;
+  border-radius: 50%;
+  margin-top: 4px;
+}
+
+.skeleton-lines {
+  flex: 1;
+}
+
+.skeleton-lines .skeleton-line {
+  height: 10px;
+  margin-bottom: 6px;
+}
+
+.skeleton-lines .skeleton-line:first-child {
+  width: 90%;
+}
+
+.skeleton-lines .skeleton-line.short {
+  width: 60%;
+}
+
+.details-divider {
+  height: 1px;
+  background: #f3f4f6;
+  margin: 8px 0;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .archives-details-panel {
+    width: 240px;
+    min-width: 240px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .archives-list-panel {
+    width: 280px;
+    min-width: 280px;
+  }
+  
+  .archives-details-panel {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .archives-page {
+    flex-direction: column;
+  }
+  
+  .archives-list-panel {
+    width: 100%;
+    min-width: 100%;
+    height: 200px;
+    min-height: 200px;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .archives-chat-panel {
+    border-right: none;
+  }
+}
+
+

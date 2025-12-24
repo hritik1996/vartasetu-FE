@@ -1,0 +1,67 @@
+.conversation-item {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.conversation-item:hover {
+  background-color: #f9f9f9;
+}
+
+.conversation-item.selected {
+  background-color: #e3f2fd;
+  border-left: 3px solid #2196f3;
+}
+
+.conversation-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.visitor-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.visitor-id {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.status-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.status-badge.open {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-badge.closed {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.conversation-time {
+  font-size: 12px;
+  color: #999;
+}
+
+.conversation-item-preview {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
