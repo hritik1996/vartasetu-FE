@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getToken, setToken, removeToken } from '../utils/storage';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000';
 
 // Create axios instance with default config
 const api = axios.create({
