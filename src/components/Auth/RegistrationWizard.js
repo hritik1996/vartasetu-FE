@@ -5,70 +5,245 @@ import Input from '../Common/Input';
 import Button from '../Common/Button';
 import './RegistrationWizard.css';
 
+const channelOptions = ['Messenger', 'WhatsApp', 'Email', 'SMS', 'Telegram', 'In-app'];
+
+const initialInvites = [
+  { label: 'Support Lead', email: '' },
+  { label: 'On-call Specialist', email: '' },
+  { label: 'Lifecycle Marketer', email: '' }
+];
+
 const RegistrationWizard = () => {
+  const [stepIndex, setStepIndex] = useState(0);
   const [formData, setFormData] = useState({
     name: '',
+    website: '',
+    channels: ['Messenger', 'Email'],
+    invites: initialInvites,
+    snippetCopied: false,
     email: '',
-    password: '',
-    confirmPassword: ''
+    password: ''
   });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [touched, setTouched] = useState({ email: false, password: false, confirmPassword: false });
+  const [submitting, setSubmitting] = useState(false);
+  const [submissionError, setSubmissionError] = useState('');
+  const [completed, setCompleted] = useState(false);
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  const widgetSnippet = `<!-- VartaSetu widget -->
+<script>
+(function() {
+  var vs = document.createElement('script');
+  vs.type = 'text/javascript';
+  vs.async = true;
+  vs.src = 'https://cdn.vartasetu.com/widget.js';
+  vs.onload = function() {
+    window.vartasetu.init({
+      workspace: 'your-workspace-id',
+      installSource: 'onboarding_wizard'
+    });
+  };
+  var s = document.getElementsByTagName('script')[0];
+  s.parentNode.insertBefore(vs, s);
+})();
+</script>`;
+
+  const steps = [
+    {
+      id: 1,
+      title: "Hi, what's your name?",
+      description: 'This is how customers and teammates will see you inside VartaSetu.',
+      content: (
+        <div className="wizard-form-group">
+          <label htmlFor="name">Display name</label>
+          <input
+            id="name"
+            type="text"
+            placeholder="e.g. Aarav from VartaSetu"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            className="wizard-input"
+          />
+        </div>
+      )
+    },
+    {
+      id: 2,
+      title: 'Automate your customer service',
+      description: 'Tell us where VartaSetu will live. We use your website to personalise suggestions.',
+      content: (
+        <div className="wizard-form-group">
+          <label htmlFor="website">Website</label>
+          <input
+            id="website"
+            type="text"
+            placeholder="your-company.com"
+            value={formData.website}
+            onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+            className="wizard-input"
+          />
+          <p className="field-help">
+            We'll show you how to automatically answer FAQs using public content from your site.
+          </p>
+        </div>
+      )
+    },
+    {
+      id: 3,
+      title: 'Install the VartaSetu chat widget',
+      description: 'Add this snippet before the closing </body> tag on every page.',
+      content: (
+        <div className="snippet-card">
+          <div className="snippet-header">
+            <span className="snippet-tag">{'<script>'}</span>
+            <button
+              type="button"
+              className="copy-button"
+              onClick={() => {
+                if (navigator?.clipboard?.writeText) {
+                  navigator.clipboard.writeText(widgetSnippet);
+                } else {
+                  window.prompt('Copy this snippet', widgetSnippet);
+                }
+                setFormData({ ...formData, snippetCopied: true });
+                setTimeout(() => setFormData((prev) => ({ ...prev, snippetCopied: false })), 2000);
+              }}
+            >
+              {formData.snippetCopied ? 'Copied!' : 'Copy code'}
+            </button>
+          </div>
+          <pre className="snippet-code">
+            <code>{widgetSnippet}</code>
+          </pre>
+          <div className="snippet-actions">
+            <button type="button" className="action-btn">Invite your developer</button>
+            <button type="button" className="action-btn">Connect via Tag Manager</button>
+            <button type="button" className="action-btn">See other integrations</button>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 4,
+      title: 'Choose your communication channels',
+      description: 'Select the touchpoints you want to manage through VartaSetu.',
+      content: (
+        <div className="channel-grid">
+          {channelOptions.map((channel) => {
+            const selected = formData.channels.includes(channel);
+            return (
+              <button
+                type="button"
+                key={channel}
+                className={`channel-chip ${selected ? 'selected' : ''}`}
+                onClick={() => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    channels: selected
+                      ? prev.channels.filter((c) => c !== channel)
+                      : [...prev.channels, channel]
+                  }));
+                }}
+              >
+                <span className="channel-name">{channel}</span>
+                <span className="chip-status">{selected ? 'Enabled' : 'Add'}</span>
+              </button>
+            );
+          })}
+        </div>
+      )
+    },
+    {
+      id: 5,
+      title: 'Invite your teammates',
+      description: 'Get your crew online so every conversation has coverage.',
+      content: (
+        <div className="invite-grid">
+          {formData.invites.map((invite, idx) => (
+            <div key={invite.label} className="wizard-form-group">
+              <label>{invite.label}</label>
+              <input
+                type="email"
+                placeholder={`e.g. ${invite.label.toLowerCase().replace(' ', '.')}@vartasetu.com`}
+                value={invite.email}
+                onChange={(e) => {
+                  const updated = [...formData.invites];
+                  updated[idx] = { ...updated[idx], email: e.target.value };
+                  setFormData({ ...formData, invites: updated });
+                }}
+                className="wizard-input"
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            className="add-teammate-btn"
+            onClick={() =>
+              setFormData((prev) => ({
+                ...prev,
+                invites: [...prev.invites, { label: `Teammate ${prev.invites.length + 1}`, email: '' }]
+              }))
+            }
+          >
+            + Add another teammate
+          </button>
+        </div>
+      )
+    },
+    {
+      id: 6,
+      title: 'Secure your workspace login',
+      description: 'Create credentials for your primary agent account.',
+      content: (
+        <div className="credential-grid">
+          <div className="wizard-form-group">
+            <label htmlFor="work-email">Work email</label>
+            <input
+              id="work-email"
+              type="email"
+              placeholder="agent@vartasetu.com"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="wizard-input"
+            />
+          </div>
+          <div className="wizard-form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Create a strong password"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              className="wizard-input"
+            />
+            <p className="field-help">Use at least 8 characters with a mix of letters and numbers.</p>
+          </div>
+        </div>
+      )
+    }
+  ];
+
+  const totalSteps = steps.length;
+  const current = steps[stepIndex];
+
+  const handleContinue = () => {
+    if (stepIndex < totalSteps - 1) {
+      setStepIndex(stepIndex + 1);
+    }
   };
 
-  const getEmailError = () => {
-    if (!touched.email) return '';
-    if (!formData.email) return 'Email is required';
-    if (!validateEmail(formData.email)) return 'Please enter a valid email';
-    return '';
+  const handleBack = () => {
+    if (stepIndex > 0) {
+      setStepIndex(stepIndex - 1);
+    }
   };
 
-  const getPasswordError = () => {
-    if (!touched.password) return '';
-    if (!formData.password) return 'Password is required';
-    if (formData.password.length < 6) return 'Minimum 6 characters required';
-    return '';
-  };
-
-  const getConfirmPasswordError = () => {
-    if (!touched.confirmPassword) return '';
-    if (!formData.confirmPassword) return 'Please confirm password';
-    if (formData.password !== formData.confirmPassword) return 'Passwords do not match';
-    return '';
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setTouched({ email: true, password: true, confirmPassword: true });
-
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-      setError('Please fill in all fields');
+  const handleFinish = async () => {
+    if (!formData.name || !formData.email || !formData.password) {
+      setSubmissionError('Please complete your name, work email, and password to continue.');
       return;
     }
-
-    if (!validateEmail(formData.email)) {
-      setError('Please enter a valid email');
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    setLoading(true);
-
+    setSubmitting(true);
+    setSubmissionError('');
     try {
       await registerAgent({
         name: formData.name,
@@ -76,18 +251,17 @@ const RegistrationWizard = () => {
         password: formData.password,
         role: 'agent'
       });
-      // Redirect to login page after successful registration
-      window.location.href = '/login';
-    } catch (err) {
-      setError(err.message || 'Registration failed. Please try again.');
+      setCompleted(true);
+    } catch (error) {
+      setSubmissionError(error.message || 'Failed to finish setup. Please try again.');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   return (
     <div className="clean-auth-page">
-      {/* LEFT SIDE - Brand */}
+      {/* LEFT SIDE - Brand (same as login) */}
       <div className="brand-side">
         <div className="brand-wrapper">
           {/* Logo */}
@@ -110,7 +284,7 @@ const RegistrationWizard = () => {
           {/* Tagline */}
           <p className="main-tagline">Start delivering exceptional customer experiences today</p>
 
-          {/* Simple Stats - DIFFERENT from login */}
+          {/* Simple Stats */}
           <div className="simple-stats">
             <div className="stat-item">
               <div className="stat-number">5 min</div>
@@ -126,7 +300,7 @@ const RegistrationWizard = () => {
             </div>
           </div>
 
-          {/* Features List - NEW */}
+          {/* Features List */}
           <div className="features-box">
             <h3 className="features-title">Why VartaSetu?</h3>
             <div className="feature-list">
@@ -157,7 +331,7 @@ const RegistrationWizard = () => {
             </div>
           </div>
 
-          {/* Trust Badge - UPDATED */}
+          {/* Trust Badge */}
           <div className="trust-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -167,96 +341,96 @@ const RegistrationWizard = () => {
         </div>
       </div>
 
-      {/* RIGHT SIDE - Register Form */}
+      {/* RIGHT SIDE - Wizard */}
       <div className="form-side">
-        <div className="form-wrapper">
-          <div className="form-title">
-            <h2>Create your account</h2>
-            <p>Get started with VartaSetu in minutes</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="auth-form" noValidate>
-            {error && (
-              <div className="error-alert">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-                {error}
+        <div className="wizard-wrapper">
+          {completed ? (
+            <>
+              <div className="wizard-complete">
+                <div className="success-icon">✓</div>
+                <h2>Your VartaSetu workspace is live</h2>
+                <p>We created your agent account. You can now sign in and start handling conversations.</p>
+                <div className="next-steps">
+                  <h3>Next steps</h3>
+                  <ul>
+                    <li>Log in with the credentials you just created.</li>
+                    <li>Assign teammates from the dashboard.</li>
+                    <li>Drop the widget snippet into your site to go live.</li>
+                  </ul>
+                </div>
+                <Link to="/login" className="primary-button">
+                  Go to login
+                </Link>
               </div>
-            )}
+            </>
+          ) : (
+            <>
+              {/* Progress Bar */}
+              <div className="wizard-progress">
+                <div className="progress-info">
+                  <span className="step-label">Step {stepIndex + 1}</span>
+                  <span className="step-total">{totalSteps}</span>
+                </div>
+                <div className="progress-track">
+                  <div
+                    className="progress-thumb"
+                    style={{ width: `${((stepIndex + 1) / totalSteps) * 100}%` }}
+                  />
+                </div>
+              </div>
 
-            <Input
-              id="name"
-              type="text"
-              label="Full Name"
-              value={formData.name}
-              onChange={(e) => { setFormData({ ...formData, name: e.target.value }); if (error) setError(''); }}
-              placeholder="John Doe"
-              required
-              disabled={loading}
-              autoComplete="name"
-            />
+              {/* Step Header */}
+              <div className="wizard-headline">
+                <p className="wizard-step-count">{stepIndex + 1}/{totalSteps}</p>
+                <h2>{current.title}</h2>
+                <p className="wizard-description">{current.description}</p>
+              </div>
 
-            <Input
-              id="email"
-              type="email"
-              label="Email Address"
-              value={formData.email}
-              onChange={(e) => { setFormData({ ...formData, email: e.target.value }); if (error) setError(''); }}
-              onBlur={() => setTouched(prev => ({ ...prev, email: true }))}
-              placeholder="you@company.com"
-              required
-              disabled={loading}
-              error={getEmailError()}
-              autoComplete="email"
-            />
+              {/* Step Content */}
+              <div className="wizard-content">
+                {submissionError && <div className="wizard-error">{submissionError}</div>}
+                {current.content}
+              </div>
 
-            <Input
-              id="password"
-              type="password"
-              label="Password"
-              value={formData.password}
-              onChange={(e) => { setFormData({ ...formData, password: e.target.value }); if (error) setError(''); }}
-              onBlur={() => setTouched(prev => ({ ...prev, password: true }))}
-              placeholder="Create password"
-              required
-              disabled={loading}
-              error={getPasswordError()}
-              showPasswordToggle
-              autoComplete="new-password"
-            />
+              {/* Navigation */}
+              <div className="wizard-actions">
+                {stepIndex > 0 ? (
+                  <button type="button" className="ghost-button" onClick={handleBack} disabled={submitting}>
+                    Back
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="ghost-button"
+                    onClick={() => setStepIndex(totalSteps - 1)}
+                    disabled={submitting}
+                  >
+                    Skip setup
+                  </button>
+                )}
 
-            <Input
-              id="confirmPassword"
-              type="password"
-              label="Confirm Password"
-              value={formData.confirmPassword}
-              onChange={(e) => { setFormData({ ...formData, confirmPassword: e.target.value }); if (error) setError(''); }}
-              onBlur={() => setTouched(prev => ({ ...prev, confirmPassword: true }))}
-              placeholder="Confirm password"
-              required
-              disabled={loading}
-              error={getConfirmPasswordError()}
-              showPasswordToggle
-              autoComplete="new-password"
-            />
+                {stepIndex === totalSteps - 1 ? (
+                  <button
+                    type="button"
+                    className="primary-button"
+                    onClick={handleFinish}
+                    disabled={submitting}
+                  >
+                    {submitting ? 'Finishing...' : 'Finish setup'}
+                  </button>
+                ) : (
+                  <button type="button" className="primary-button" onClick={handleContinue} disabled={submitting}>
+                    Continue
+                  </button>
+                )}
+              </div>
 
-            <Button
-              type="submit"
-              variant="primary"
-              size="large"
-              loading={loading}
-              fullWidth
-            >
-              {loading ? 'Creating account...' : 'Create Account'}
-            </Button>
-          </form>
-
-          <div className="form-bottom">
-            <p>Already have an account? <Link to="/login" className="register-link">Sign in</Link></p>
-          </div>
+              {/* Login Link */}
+              <div className="form-bottom">
+                <p>Already have an account? <Link to="/login" className="register-link">Sign in</Link></p>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
