@@ -16,7 +16,7 @@ import BillingPage from '../pages/BillingPage';
 import SettingsPage from '../pages/SettingsPage';
 import NewsPage from '../pages/NewsPage';
 import ProfilePage from '../pages/ProfilePage';
-
+import LandingPage from '../pages/LandingPage';
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
@@ -89,6 +89,15 @@ const AppRouter = () => {
           </PrivateRoute>
         }
       />
+       <Route
+        path="/landingpage"
+        element={
+          <PrivateRoute>
+            <LandingPage />
+          </PrivateRoute>
+        }
+      />
+      
       <Route
         path="/dashboard"
         element={
