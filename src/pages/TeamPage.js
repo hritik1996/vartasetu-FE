@@ -12,6 +12,15 @@ const TeamPage = () => {
   const [groupsExpanded, setGroupsExpanded] = useState(true);
   const [workingHoursExpanded, setWorkingHoursExpanded] = useState(false);
   const [performanceExpanded, setPerformanceExpanded] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmails, setInviteEmails] = useState([
+    { id: 1, email: '', role: 'Admin (billing access)' },
+    { id: 2, email: '', role: 'Admin (billing access)' },
+    { id: 3, email: '', role: 'Admin (billing access)' },
+    { id: 4, email: '', role: 'Admin (billing access)' }
+  ]);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   // Sample agents data (in production, fetch from API)
   const [agents] = useState([
@@ -43,10 +52,47 @@ const TeamPage = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  const filteredAgents = agents.filter(a => 
+  const filteredAgents = agents.filter(a =>
     a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     a.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleEmailChange = (id, value) => {
+    setInviteEmails(inviteEmails.map(item =>
+      item.id === id ? { ...item, email: value } : item
+    ));
+  };
+
+  const handleRoleChange = (id, value) => {
+    setInviteEmails(inviteEmails.map(item =>
+      item.id === id ? { ...item, role: value } : item
+    ));
+  };
+
+  const handleCopyLink = () => {
+    const inviteLink = `${window.location.origin}/invite?token=sample-token`;
+    navigator.clipboard.writeText(inviteLink);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
+
+  const handleSendInvites = () => {
+    const validEmails = inviteEmails.filter(item => item.email.trim() !== '');
+    if (validEmails.length === 0) {
+      alert('Please enter at least one email address');
+      return;
+    }
+    // In production, send API request to send invites
+    console.log('Sending invites to:', validEmails);
+    alert(`Invites sent to ${validEmails.length} email(s)`);
+    setShowInviteModal(false);
+    setInviteEmails([
+      { id: 1, email: '', role: 'Admin (billing access)' },
+      { id: 2, email: '', role: 'Admin (billing access)' },
+      { id: 3, email: '', role: 'Admin (billing access)' },
+      { id: 4, email: '', role: 'Admin (billing access)' }
+    ]);
+  };
 
   return (
     <AppLayout>
@@ -89,8 +135,8 @@ const TeamPage = () => {
           <div className="team-actions-bar">
             <div className="search-input-wrapper">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8"/>
-                <path d="m21 21-4.35-4.35"/>
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
               </svg>
               <input
                 type="text"
@@ -101,16 +147,10 @@ const TeamPage = () => {
               />
             </div>
             <div className="action-buttons">
-              <button className="action-btn outline">
+              <button className="action-btn primary" onClick={() => setShowInviteModal(true)}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
-                Add new chatbot
-              </button>
-              <button className="action-btn primary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="12" y1="5" x2="12" y2="19"/>
-                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
                 Invite agents
               </button>
@@ -121,7 +161,7 @@ const TeamPage = () => {
           <div className="team-content">
             <div className="agents-section">
               <h3>Active ({filteredAgents.length})</h3>
-              
+
               <table className="agents-table">
                 <thead>
                   <tr>
@@ -130,7 +170,7 @@ const TeamPage = () => {
                     <th>
                       Status
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="18 15 12 9 6 15"/>
+                        <polyline points="18 15 12 9 6 15" />
                       </svg>
                     </th>
                     <th></th>
@@ -139,10 +179,10 @@ const TeamPage = () => {
                 <tbody>
                   <tr className="add-agent-row">
                     <td colSpan="4">
-                      <button className="add-agent-btn">
+                      <button className="add-agent-btn" onClick={() => setShowInviteModal(true)}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="12" y1="5" x2="12" y2="19"/>
-                          <line x1="5" y1="12" x2="19" y2="12"/>
+                          <line x1="12" y1="5" x2="12" y2="19" />
+                          <line x1="5" y1="12" x2="19" y2="12" />
                         </svg>
                         Add new agent
                       </button>
@@ -179,18 +219,59 @@ const TeamPage = () => {
                           <span className="status-indicator active"></span>
                           <span className="status-text">{agentItem.status}</span>
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <polyline points="6 9 12 15 18 9"/>
+                            <polyline points="6 9 12 15 18 9" />
                           </svg>
                         </div>
                       </td>
-                      <td>
-                        <button className="more-btn">
+                      <td style={{ position: 'relative' }}>
+                        <button
+                          className="more-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenMenuId(openMenuId === agentItem.id ? null : agentItem.id);
+                          }}
+                        >
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <circle cx="12" cy="12" r="1"/>
-                            <circle cx="19" cy="12" r="1"/>
-                            <circle cx="5" cy="12" r="1"/>
+                            <circle cx="12" cy="12" r="1" />
+                            <circle cx="19" cy="12" r="1" />
+                            <circle cx="5" cy="12" r="1" />
                           </svg>
                         </button>
+
+                        {openMenuId === agentItem.id && (
+                          <div className="agent-menu-dropdown">
+                            <button
+                              className="agent-menu-item"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                console.log('Edit profile clicked');
+                                setOpenMenuId(null);
+                              }}
+                            >
+                              Edit profile
+                            </button>
+                            <button
+                              className="agent-menu-item"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                console.log('Change chat limit clicked');
+                                setOpenMenuId(null);
+                              }}
+                            >
+                              Change chat limit
+                            </button>
+                            <button
+                              className="agent-menu-item"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                console.log('View agent reports clicked');
+                                setOpenMenuId(null);
+                              }}
+                            >
+                              View agent reports
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -207,8 +288,8 @@ const TeamPage = () => {
               <h2>Details</h2>
               <button className="close-btn" onClick={() => setShowDetailsPanel(false)}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="18" y1="6" x2="6" y2="18"/>
-                  <line x1="6" y1="6" x2="18" y2="18"/>
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
             </div>
@@ -244,7 +325,7 @@ const TeamPage = () => {
                   <span className="stat-label">Last seen:</span>
                   <span className="stat-value">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                     </svg>
                     {selectedAgent.lastSeen}
                   </span>
@@ -267,7 +348,7 @@ const TeamPage = () => {
                     strokeWidth="2"
                     style={{ transform: groupsExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
                   >
-                    <polyline points="6 9 12 15 18 9"/>
+                    <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </button>
                 {groupsExpanded && (
@@ -298,7 +379,7 @@ const TeamPage = () => {
                     strokeWidth="2"
                     style={{ transform: workingHoursExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
                   >
-                    <polyline points="6 9 12 15 18 9"/>
+                    <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </button>
                 {workingHoursExpanded && (
@@ -333,25 +414,84 @@ const TeamPage = () => {
                     strokeWidth="2"
                     style={{ transform: performanceExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
                   >
-                    <polyline points="6 9 12 15 18 9"/>
+                    <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </button>
                 {performanceExpanded && (
                   <div className="section-content">
                     <div className="performance-item">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                       </svg>
                       <span>Total chats</span>
                     </div>
                     <div className="performance-item">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
                       </svg>
                       <span>Goals</span>
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Invite Modal */}
+        {showInviteModal && (
+          <div className="modal-overlay" onClick={() => setShowInviteModal(false)}>
+            <div className="invite-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>Invite people to LiveChat</h2>
+                <button className="modal-close-btn" onClick={() => setShowInviteModal(false)}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="modal-body">
+                <div className="modal-section">
+                  <label className="modal-label">Email addresses</label>
+                  {inviteEmails.map((item) => (
+                    <div key={item.id} className="invite-row">
+                      <input
+                        type="email"
+                        className="invite-email-input"
+                        placeholder={`Eg. chatting.agent${item.id}@gmail.com`}
+                        value={item.email}
+                        onChange={(e) => handleEmailChange(item.id, e.target.value)}
+                      />
+                      <select
+                        className="invite-role-select"
+                        value={item.role}
+                        onChange={(e) => handleRoleChange(item.id, e.target.value)}
+                      >
+                        <option value="Admin (billing access)">Admin (billing access)</option>
+                        <option value="Agent">Agent</option>
+                        <option value="Viewer">Viewer</option>
+                      </select>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="modal-divider">
+                  <button className="copy-link-btn" onClick={handleCopyLink}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                    </svg>
+                    {linkCopied ? 'Link copied!' : 'Copy invite link'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button className="modal-btn-send" onClick={handleSendInvites}>
+                  Send invites
+                </button>
               </div>
             </div>
           </div>
